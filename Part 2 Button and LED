@@ -1,0 +1,54 @@
+/*
+ * GccApplication7.c
+ *
+ * Created: 5/4/2021 12:01:54 PM
+ * Author : Jaxson Dog
+ */ 
+
+#ifndef F_CPU
+#define F_CPU 8000000UL //telling controller crystal frequency (8 MHZ AVR ATMEGA32U4)
+#endif
+
+#include <avr/io.h>
+#include <util/delay.h>
+
+
+#define DEBOUNCE_TIME 25 //time to wait while "de-bouncing" button press 25ms
+#define LOCK_INPUT_TIME 300 //time to wait after a button press 300ms
+
+void init_ports_mcu()
+{
+	DDRD &= ~(1<<PD4); //Set PD4 Data Direction to 1 (Output)
+	PORTD &= ~(1<<PD4); //Set Pullup Resistor LOW for PD4
+	DDRC |= (1<<PC7); //Set Red LED as OUTPUT
+	PORTC |= 1<<PC7;
+	_delay_ms(LOCK_INPUT_TIME);
+	PORTC &= ~(1<<PC7);
+}
+
+unsigned char button_state()
+{
+	/* the button is pressed when BUTTON1 bit it set */
+	if((PIND & (1<<4))==0x10)
+	{
+		_delay_ms(DEBOUNCE_TIME);
+		if((PIND & (1<<4))==0x10)
+		return 1;
+	}
+	return 0;
+}
+
+int main(void)
+{
+	init_ports_mcu();
+    /* Replace with your application code */
+    while (1) 
+    {
+		if(button_state() == 1)
+		{
+			PORTC ^= (1<<PC7);
+			_delay_ms(LOCK_INPUT_TIME);
+		}
+    }
+	return (0);
+}
